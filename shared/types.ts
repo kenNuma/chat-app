@@ -5,3 +5,8 @@ export type ChatRequest = {
 export type ChatResponse = {
     reply: string;
 };
+
+export type Message = {
+    role: 'user' | 'assistant';
+    text: string;
+}
