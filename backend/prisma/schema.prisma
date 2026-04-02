@@ -12,9 +12,45 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages  Message[]
+  roomMembers RoomMember[]
+}
+
+model Room {
+  id        Int       @id @default(autoincrement())
+  name      String
+
+  messages  Message[]
+  roomMembers RoomMember[]
+}
+
+model RoomMember {
+  id        Int      @id @default(autoincrement())
+  joinedAt  DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  
+  roomId    Int
+  room      Room     @relation(fields: [roomId], references: [id])
+
+  @@unique([userId, roomId])
+}
+
 model Message {
   id        Int      @id @default(autoincrement())
-  role      String
   content   String
   createdAt DateTime @default(now())
+
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roomId    Int
+  room      Room      @relation(fields: [roomId], references: [id])
 }

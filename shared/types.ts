@@ -2,11 +2,21 @@ export type ChatRequest = {
     text: string;
 };
 
-export type ChatResponse = {
-    reply: string;
+export type Room = {
+    id: number;
+    name: string;
+};
+
+export type MessageUser = {
+    id: number;
+    name: string;
 };
 
 export type Message = {
-    role: 'user' | 'assistant';
-    text: string;
+    id: number;
+    content: string;
+    userId: number;
+    roomId: number;
+    createdAt: Date;
+    user?: MessageUser;
 }
