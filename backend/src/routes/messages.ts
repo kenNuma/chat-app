@@ -1,14 +1,17 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma"
+import { requireAuth } from "../middleware/requireAuth";
+import { requireRoomMember } from "../middleware/requireRoomMember";
 
 const router = Router();
-
-router.get("/:roomId",async (_req, res) => {
+router.use(requireAuth);
+// 指定roomのメッセージ一覧を取得
+router.get("/:roomId", requireRoomMember, async (_req, res) => {
     try {
         const roomId = Number(_req.params.roomId);
-            if(isNaN(roomId)) {
-                return res.status(400).json({error: "roomIdが不正です"})
-            }
+        if(isNaN(roomId)) {
+            return res.status(400).json({error: "roomIdが不正です"})
+        }
         
         const messages = await prisma.message.findMany({
             where: {
@@ -29,9 +32,11 @@ router.get("/:roomId",async (_req, res) => {
     }
 });
 
-router.post("/",async (_req, res) => {
+//指定roomにメッセージを送る
+router.post("/", requireRoomMember, async (_req, res) => {
     try {
-        const { content, userId, roomId } = _req.body;
+        const { content, roomId } = _req.body;
+        const userId = _req.session.userId;
 
         if (!content || !userId || !roomId) {
             return res.status(400).json({ error: "content, userId, roomId は必須です" });

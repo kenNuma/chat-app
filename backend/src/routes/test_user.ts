@@ -7,7 +7,7 @@ router.post("/", async (req, res) => {
     try {
         const user = await prisma.user.create({
             data: {
-                name: "hurukawa",
+                name: "ちーとむ",
             },
         });
 

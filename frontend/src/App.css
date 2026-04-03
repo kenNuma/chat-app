@@ -28,11 +28,15 @@
   flex: 1;
   overflow-y: auto;
 
-  -ms-overflow-style: none;  /* IE, Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE, Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .chat-messages::-webkit-scrollbar {
-  display: none;             /* Chrome, Safari */
+  display: none;
+  /* Chrome, Safari */
 }
 
 
@@ -45,6 +49,7 @@
 .message-row.user {
   justify-content: flex-end;
 }
+
 .message-row::before {
   content: attr(data-name);
   font-size: 12px;
@@ -71,8 +76,12 @@
   color: rgb(255, 255, 255);
 }
 
-
 .message-bubble.assistant {
   background-color: #e5e7eb;
   color: #111827;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
 }
