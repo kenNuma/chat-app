@@ -10,19 +10,33 @@ router.get("/me", async (_req, res) => {
     try {
         const userId = _req.session.userId;
 
-        const roomMembers_with_room = await prisma.roomMember.findMany({
-            where: { userId: userId },
+        const roomMembersWithRoom = await prisma.roomMember.findMany({
+            where: { userId },
             include: {
-                room: true
+                room: {
+                    include: {
+                        roomMembers: {
+                            include: {
+                                user: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
-        const room_all = roomMembers_with_room.map((roomMember) => ({
-            id: roomMember.room.id,
-            name: roomMember.room.name,
-        }));
+        const roomAll = roomMembersWithRoom.map((roomMember) => {
+            const otherMember = roomMember.room.roomMembers.find(
+                (member) => member.userId !== userId
+            );
 
-        res.json(room_all);
+            return {
+                id: roomMember.room.id,
+                name: otherMember?.user.name ?? "不明なユーザー",
+            };
+        });
+
+        res.json(roomAll);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "ルーム一覧取得に失敗しました！" });
@@ -78,7 +92,7 @@ router.post("/", async (_req, res) => {
 
         const room = await prisma.room.create({
             data: {
-                name: name ?? "名無しグループ",
+                name: name ?? "",
                 roomMembers: {
                     create: uniqueMemberIds.map((userId) => ({
                         userId,

@@ -3,78 +3,97 @@ import { prisma } from "../lib/prisma";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.get("/get_user/:id", async (req, res) => {
     try {
-        const user = await prisma.user.create({
-            data: {
-                name: "ちーとむ",
+        const userId = Number(req.params.id);
+        const target_user_messasges =  await prisma.message.findMany({
+            where: {
+                userId: userId,
             },
-        });
+            include: {
+                user: true,
+            }
+        })
 
-        res.json(user);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "ユーザー作成失敗" });
+        return res.json(target_user_messasges);
+    }catch(e) {
+        console.error(e);
+        res.status(500).json({ message: "user の取得に失敗しました。"});
     }
 });
 
-router.post("/create_room", async (req, res) => {
-    try {
-        const user = await prisma.room.create({
-            data: {
-                name: "【仕事】",
-            },
-        });
+// router.post("/", async (req, res) => {
+//     try {
+//         const user = await prisma.user.create({
+//             data: {
+//                 name: "ちーとむ",
+//             },
+//         });
 
-        res.json(user);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "ユーザー作成失敗" });
-    }
-});
+//         res.json(user);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "ユーザー作成失敗" });
+//     }
+// });
 
-router.post("/create_roommember", async (req, res) => {
-    try {
-        const user = await prisma.roomMember.create({
-            data: {
-                userId: 2,
-                roomId: 2,
-            },
-        });
+// router.post("/create_room", async (req, res) => {
+//     try {
+//         const user = await prisma.room.create({
+//             data: {
+//                 name: "【仕事】",
+//             },
+//         });
 
-        res.json(user);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "ユーザー作成失敗" });
-    }
-});
+//         res.json(user);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "ユーザー作成失敗" });
+//     }
+// });
 
-router.get("/test-user-with-messages", async (req, res) => {
-    const user = await prisma.user.findUnique({
-        where: { id: 2 },
-        include: { messages: true },
-    });
+// router.post("/create_roommember", async (req, res) => {
+//     try {
+//         const user = await prisma.roomMember.create({
+//             data: {
+//                 userId: 2,
+//                 roomId: 2,
+//             },
+//         });
 
-    res.json(user);
-});
-// roomId から Message一覧取得
-router.get("/test-roomid-with-messages", async (req, res) => {
-    const message_all = await prisma.message.findMany({
-        where: { roomId: 3 },
-    });
+//         res.json(user);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "ユーザー作成失敗" });
+//     }
+// });
 
-    res.json(message_all);
-});
-// userId -> roomMember -> room 一覧取得
-router.get("/test-userid-with-room", async (req, res) => {
-    const room_all = await prisma.roomMember.findMany({
-        where: { userId: 2 },
-        include: {
-            room: true
-        },
-    });
+// router.get("/test-user-with-messages", async (req, res) => {
+//     const user = await prisma.user.findUnique({
+//         where: { id: 2 },
+//         include: { messages: true },
+//     });
 
-    res.json(room_all);
-});
+//     res.json(user);
+// });
+// // roomId から Message一覧取得
+// router.get("/test-roomid-with-messages", async (req, res) => {
+//     const message_all = await prisma.message.findMany({
+//         where: { roomId: 3 },
+//     });
+
+//     res.json(message_all);
+// });
+// // userId -> roomMember -> room 一覧取得
+// router.get("/test-userid-with-room", async (req, res) => {
+//     const room_all = await prisma.roomMember.findMany({
+//         where: { userId: 2 },
+//         include: {
+//             room: true
+//         },
+//     });
+
+//     res.json(room_all);
+// });
 
 export default router;

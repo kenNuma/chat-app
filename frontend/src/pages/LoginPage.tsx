@@ -1,86 +1,94 @@
 import type { User } from "../../../shared/types";
+import { useState } from "react";
+
+import { API_BASE_URL } from "../App";
 
 type LoginPageProps = {
     onLogin: (user: User) => void;
+    onGoToRegister: () => void;
 };
 
-const mockUsers: User[] = [
-    { id: 1, name: "kamura" },
-    { id: 2, name: "hurukawa" },
-    { id: 3, name: "Jiro" },
-];
+export default function LoginPage({ onLogin, onGoToRegister }: LoginPageProps) {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
-    const handleLogin = async (user: User) => {
-        const res = await fetch("http://localhost:5000/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({
-                userId: user.id,
-            }),
-        });
 
-        if (!res.ok) {
-            throw new Error("ログイン失敗");
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrorMessage("");
+        setLoading(true);
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    email: email.trim().toLowerCase(),
+                    password,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || "ログインに失敗しました！")
+            }
+            onLogin(data.user);
+        } catch (e) {
+            console.error(e);
+            setErrorMessage(e instanceof Error ? e.message : "ログインに失敗しました");
+        } finally {
+            setLoading(false);
         }
+    };
 
-        const loginUser = await res.json();
-        onLogin(loginUser);
-    }
     return (
-        <div style={styles.container}>
-            <div style={styles.card}>
-                <h1>ログイン</h1>
-                <p>まずは仮ユーザー選択で進めよう</p>
+        <div className="login-page">
+            <div className="login-card">
+                <h1 className="login-title">ログイン</h1>
+                <p className="login-subtitle">登録済みアカウントでサインイン</p>
 
-                <div style={styles.userList}>
-                    {mockUsers.map((user) => (
-                        <button
-                            key={user.id}
-                            style={styles.button}
-                            onClick={() => handleLogin(user)}
-                        >
-                            {user.name} でログイン
-                        </button>
-                    ))}
-                </div>
+                <form className="login-form" onSubmit={handleLogin}>
+                    <div className="login-form-group">
+                        <label htmlFor="email">メールアドレス</label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="example@test.com"
+                        />
+                    </div>
+
+                    <div className="login-form-group">
+                        <label htmlFor="password">パスワード</label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="パスワードを入力"
+                        />
+                    </div>
+
+                    {errorMessage && <p className="login-error">{errorMessage}</p>}
+
+                    <button className="login-button" type="submit" disabled={loading}>
+                        {loading ? "ログイン中..." : "ログイン"}
+                    </button>
+                </form>
+
+                <button
+                    className="move-register-button"
+                    type="button"
+                    onClick={onGoToRegister}
+                >
+                    新規登録はこちら
+                </button>
             </div>
         </div>
     );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-    container: {
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f5f5f5",
-    },
-    card: {
-        background: "#fff",
-        padding: "32px",
-        borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        minWidth: "320px",
-        textAlign: "center",
-    },
-    userList: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        marginTop: "20px",
-    },
-    button: {
-        padding: "12px 16px",
-        border: "none",
-        borderRadius: "8px",
-        cursor: "pointer",
-        background: "#222",
-        color: "#fff",
-        fontSize: "16px",
-    },
-};
